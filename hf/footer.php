@@ -1,6 +1,7 @@
+<?php include "style.php"; ?>
  <link href="style.css" rel="stylesheet">
- <div class="container">
-     <footer class="d-flex justify-content-between row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 my-5 border-top">
+  <div class="container">
+     <footer class="d-flex justify-content-between row row-cols-1 row-cols-sm-2 row-cols-md-4 py-2 my-2 border-top">
 
          <div class="col mb-3">
              <h5>Bantaun</h5>
@@ -49,7 +50,7 @@
      </footer>
  </div>
  <div class="container">
-     <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+     <footer class="d-flex flex-wrap justify-content-between align-items-center py-2 my-2 border-top">
          <div class="col-md-4 d-flex align-items-center">
              <span class="mb-3 mb-md-0 text-body-secondary">&copy; 2025 Nama Perusahaan. All Rights Reserved.</span>
              <span class="mb-3 mb-md-0 text-body-secondary">Kontak: <a href="mailto:info@namaperusahaan.com">info@namaperusahaan.com</a> | Telp: 0812-3456-7890</span>
