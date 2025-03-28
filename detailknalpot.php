@@ -1,16 +1,24 @@
 <?php include 'hf/header.php'; ?>
 
 <div class="container" style="max-width: 1200px; margin: auto; padding: 20px; border-radius: 10px;">
-    <div class="product-detail" style="display: flex; gap: 20px;">
-        <div class="product-image" style="flex: 1;">
+    <div class="product-detail" style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div class="product-image" style="flex: 1; min-width: 300px;">
             <img src="image/knalpot.png" alt="Kenalpot DBS Ninja" style="width: 100%; border-radius: 10px;">
         </div>
-        <div class="product-info" style="flex: 2;">
+        <div class="product-info" style="flex: 2; min-width: 300px;">
             <h2>Kenalpot DBS Ninja</h2>
             <span class="tag" style="background: lightgreen; padding: 5px; border-radius: 5px;">Tag</span>
             <h3>Rp 2.830.000</h3>
-            <button style="width: 100%; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
-            <br><br>
+            <br>
+            <div id="creditOptionsContainer"></div>
+            <br>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="addToCart('knalpot')" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
+                </button>
+                <button onclick="checkout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
+            </div>
+            <br>
             <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
                 <strong>Deskripsi</strong>
                 <p>Kenalpot DBS untuk motor ninja<br>Condition: 80% mulus minus pemakaian (Original)</p>
@@ -34,5 +42,52 @@
         <button style="padding: 5px 10px; background: black; color: white; border-radius: 5px; cursor: pointer;">Kunjungi</button>
     </div>
 </div>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/credit.js"></script>
+<script>
+    const PRODUCT_PRICE = 2830000;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const creditOptionsContainer = document.getElementById('creditOptionsContainer');
+        creditOptionsContainer.innerHTML = showCreditOptions(PRODUCT_PRICE);
+    });
+
+    function addToCart(productType) {
+        const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
+        const product = {
+            type: productType,
+            name: "Kenalpot DBS Ninja",
+            price: PRODUCT_PRICE,
+            image: "image/knalpot.png",
+            creditOption: selectedCredit ? selectedCredit.value : 'cash'
+        };
+
+        let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        cartItems.push(product);
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+        alert('Produk berhasil ditambahkan ke keranjang!');
+    }
+
+    function checkout() {
+        const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
+        if (!selectedCredit || selectedCredit.value === 'cash') {
+            alert('Lanjut ke pembayaran langsung: ' + formatRupiah(PRODUCT_PRICE));
+        } else {
+            const months = parseInt(selectedCredit.value);
+            const result = calculateInstallment(PRODUCT_PRICE, months);
+            alert(
+                `Detail Pembayaran Cicilan:\n` +
+                `- Harga Produk: ${formatRupiah(PRODUCT_PRICE)}\n` +
+                `- Biaya Admin (2%): ${formatRupiah(result.adminFee)}\n` +
+                `- Cicilan per Bulan: ${formatRupiah(result.monthlyPayment)}\n` +
+                `- Tenor: ${months} bulan\n` +
+                `- Total Pembayaran: ${formatRupiah(result.totalPrice)}`
+            );
+        }
+    }
+</script>
 
 <?php include 'hf/footer.php'; ?>
