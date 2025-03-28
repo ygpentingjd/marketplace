@@ -7,7 +7,7 @@
            <input type="text" class="form-control search-bar" placeholder="Cari sesuatu...">
        </div>
        <div class="d-flex align-items-center icon-links">
-           <a href="#" class="me-3"><img src="image/shopping-cart.png" alt="Keranjang"></a>
+           <a href="cart.php" class="me-3"><img src="image/shopping-cart.png" alt="Keranjang"></a>
            <a href="account.php"><img src="image/user-square.png" alt="Akun"></a>
        </div>
    </div>
