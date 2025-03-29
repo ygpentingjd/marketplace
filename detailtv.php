@@ -42,7 +42,7 @@
 
                 <div class="mt-3">
                     <button class="btn btn-success" onclick="addToCart()">Tambah ke Keranjang</button>
-                    <button class="btn btn-dark" onclick="checkout()">Checkout</button>
+                    <a href="checkout.php"><button class="btn btn-dark" onclick="checkout()">Checkout</button></a>
                 </div>
 
                 <div class="mt-4">
@@ -76,10 +76,11 @@
 
             const paymentMethod = selectedOption.value;
             let cartItem = {
-                id: 'tv-samsung-43',
+                id: 'tv',
                 name: 'Samsung TV 43 inch',
                 price: productPrice,
-                paymentMethod: paymentMethod
+                paymentMethod: paymentMethod,
+                store: "Preloved By Ocaa"
             };
 
             if (paymentMethod !== 'cash') {

@@ -1,96 +1,374 @@
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-   <script>
-       document.addEventListener('DOMContentLoaded', function() {
-           loadCartItems();
-       });
+<!DOCTYPE html>
+<html lang="id">
 
-       function loadCartItems() {
-           const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-           const cartContainer = document.getElementById('cartItems');
-           cartContainer.innerHTML = '';
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keranjang - K.O</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fff;
+            font-family: Arial, sans-serif;
+            min-width: 1400px;
+        }
 
-           cartItems.forEach((item, index) => {
-               const itemHtml = `
-                    <div class="cart-item">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                <input class="form-check-input item-checkbox" 
-                                       type="checkbox" 
-                                       data-price="${item.price}"
-                                       data-index="${index}"
-                                       onchange="updateTotal()">
+        .cart-container {
+            width: 1400px;
+            margin: 20px auto;
+            padding: 0;
+        }
+
+        .cart-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .cart-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .store-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+        }
+
+        .store-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            gap: 15px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .cart-item:first-child {
+            padding-top: 0;
+        }
+
+        .product-image {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+        }
+
+        .product-info {
+            flex: 1;
+            padding-right: 20px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .product-size {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .product-price {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-top: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            padding: 5px;
+            color: #666;
+        }
+
+        .action-btn:hover {
+            color: #333;
+        }
+
+        .form-check-input {
+            margin-right: 12px;
+            width: 16px;
+            height: 16px;
+        }
+
+        .checkout-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .total-section {
+            margin-bottom: 15px;
+        }
+
+        .total-label {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .total-amount {
+            font-size: 14px;
+            color: #333;
+            text-align: right;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: #000;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .checkout-btn:hover {
+            background: #333;
+        }
+
+        .row {
+            margin: 0 -15px;
+        }
+
+        .col-lg-8 {
+            width: 70%;
+            padding: 0 15px;
+            float: left;
+        }
+
+        .col-lg-4 {
+            width: 30%;
+            padding: 0 15px;
+            float: left;
+        }
+
+        /* Clear float */
+        .row::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+    </style>
+</head>
+
+<body>
+    <?php include 'hf/header.php'; ?>
+
+    <div class="cart-container">
+        <h1 class="cart-title">Keranjang</h1>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="cart-section">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAll" onchange="toggleAll(this)">
+                        <label class="form-check-label" for="selectAll">
+                            Pilih Semua
+                        </label>
+                    </div>
+                </div>
+
+                <div id="cartItems">
+                    <!-- Cart items will be loaded here -->
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="checkout-section">
+                    <div class="total-section">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="total-label">Total</span>
+                            <span id="totalPrice" class="total-amount">-</span>
+                        </div>
+                    </div>
+                    <button class="checkout-btn" onclick="proceedToCheckout()">
+                        Checkout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?php include 'hf/footer.php'; ?>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCartItems();
+        });
+
+        function loadCartItems() {
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartContainer = document.getElementById('cartItems');
+
+            if (cartItems.length === 0) {
+                cartContainer.innerHTML = `
+                    <div class="store-section text-center py-5">
+                        <p class="mb-0">Keranjang Belanja Kosong</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group items by store
+            const itemsByStore = {};
+            cartItems.forEach(item => {
+                const store = item.store || 'Preloved By Ocaa';
+                if (!itemsByStore[store]) {
+                    itemsByStore[store] = [];
+                }
+                itemsByStore[store].push(item);
+            });
+
+            let cartHTML = '';
+
+            // Render items grouped by store
+            for (const [store, items] of Object.entries(itemsByStore)) {
+                cartHTML += `
+                    <div class="store-section">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                onchange="toggleStore(this, '${store}')">
+                            <label class="form-check-label store-name">
+                                ${store}
+                            </label>
+                        </div>
+                `;
+
+                items.forEach((item, index) => {
+                    const price = item.paymentMethod === 'installment' && item.installment ?
+                        item.installment.totalPrice : item.price;
+
+                    cartHTML += `
+                        <div class="cart-item">
+                            <input class="form-check-input" type="checkbox" 
+                                   data-store="${store}"
+                                   data-index="${index}"
+                                   data-price="${price}"
+                                   onchange="updateTotal()">
+                            <img src="image/${item.id}.png" class="product-image" alt="${item.name}">
+                            <div class="product-info">
+                                <div class="product-name">${item.name}</div>
+                                ${item.size ? `<div class="product-size">size: ${item.size}</div>` : ''}
+                                <div class="product-price">Rp${price.toLocaleString('id-ID')}</div>
                             </div>
-                            <div class="col-auto">
-                                <img src="${item.image}" alt="${item.name}" class="product-image">
-                            </div>
-                            <div class="col">
-                                <h5 class="mb-1">${item.name}</h5>
-                                ${item.size ? `<p class="text-muted mb-1">size: ${item.size}</p>` : ''}
-                                ${item.color ? `<p class="text-muted mb-1">color: ${item.color}</p>` : ''}
-                                <h6 class="mb-0 price" id="price-${index}">Rp${item.price.toLocaleString('id-ID')}</h6>
-                            </div>
-                            <div class="col-auto">
-                                <button class="favorite-btn me-2">
+                            <div class="action-buttons">
+                                <button class="action-btn" onclick="moveToWishlist(${index})">
                                     <i class="far fa-heart"></i>
                                 </button>
-                                <button class="delete-btn" onclick="removeItem(${index})">
+                                <button class="action-btn" onclick="removeFromCart(${index})">
                                     <i class="far fa-trash-alt"></i>
                                 </button>
                             </div>
                         </div>
-                    </div>
-                `;
-               cartContainer.innerHTML += itemHtml;
-           });
-       }
+                    `;
+                });
 
-       function toggleAll(checkbox) {
-           const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-           itemCheckboxes.forEach(item => {
-               item.checked = checkbox.checked;
-               togglePrice(item);
-           });
-           updateTotal();
-       }
+                cartHTML += `</div>`;
+            }
 
-       function togglePrice(checkbox) {
-           const index = checkbox.getAttribute('data-index');
-           const priceElement = document.getElementById(`price-${index}`);
-           if (checkbox.checked) {
-               priceElement.classList.add('show');
-           } else {
-               priceElement.classList.remove('show');
-           }
-       }
+            cartContainer.innerHTML = cartHTML;
+            updateTotal();
+        }
 
-       function updateTotal() {
-           const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-           let total = 0;
+        function toggleStore(checkbox, store) {
+            const storeItems = document.querySelectorAll(`input[data-store="${store}"]`);
+            storeItems.forEach(item => {
+                item.checked = checkbox.checked;
+            });
+            updateTotal();
+        }
 
-           checkboxes.forEach(checkbox => {
-               const price = parseInt(checkbox.getAttribute('data-price'));
-               total += price;
-               togglePrice(checkbox);
-           });
+        function toggleAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.cart-item input[type="checkbox"]');
+            const storeCheckboxes = document.querySelectorAll('.store-section > .form-check > input[type="checkbox"]');
+            checkboxes.forEach(item => item.checked = checkbox.checked);
+            storeCheckboxes.forEach(item => item.checked = checkbox.checked);
+            updateTotal();
+        }
 
-           document.getElementById('totalPrice').textContent = `Rp${total.toLocaleString('id-ID')}`;
-       }
+        function updateTotal() {
+            const selectedItems = document.querySelectorAll('.cart-item input[type="checkbox"]:checked');
+            let total = 0;
 
-       function removeItem(index) {
-           const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-           cartItems.splice(index, 1);
-           localStorage.setItem('cartItems', JSON.stringify(cartItems));
-           loadCartItems();
-           updateTotal();
-       }
+            selectedItems.forEach(item => {
+                total += parseFloat(item.dataset.price);
+            });
 
-       function checkout() {
-           const checkedItems = document.querySelectorAll('.item-checkbox:checked');
-           if (checkedItems.length === 0) {
-               alert('Silakan pilih produk yang akan dibeli');
-               return;
-           }
-           // Add your checkout logic here
-           alert('Proses checkout akan dimulai');
-       }
-   </script>
+            document.getElementById('totalPrice').textContent = total > 0 ?
+                `Rp${total.toLocaleString('id-ID')}` : '-';
+        }
+
+        function moveToWishlist(index) {
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+            const item = cartItems[index];
+            cartItems.splice(index, 1);
+
+            if (!wishlist.some(w => w.id === item.id)) {
+                wishlist.push(item);
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+
+            loadCartItems();
+        }
+
+        function removeFromCart(index) {
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            cartItems.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cartItems));
+            loadCartItems();
+        }
+
+        function proceedToCheckout() {
+            const selectedItems = document.querySelectorAll('.cart-item input[type="checkbox"]:checked');
+            if (selectedItems.length === 0) {
+                alert('Silakan pilih produk yang ingin dibeli');
+                return;
+            }
+
+            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            const checkoutItems = [];
+
+            selectedItems.forEach(item => {
+                const index = parseInt(item.dataset.index);
+                checkoutItems.push(cartItems[index]);
+            });
+
+            localStorage.setItem('checkoutItems', JSON.stringify(checkoutItems));
+            window.location.href = 'checkout.php';
+        }
+    </script>
+</body>
+
+</html>

@@ -25,7 +25,7 @@
                 <button onclick="addToCart('sepatu')" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
                 </button>
-                <button style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
+                <a href="checkout.php"><button style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button></a>
             </div>
             <br><br>
             <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
@@ -102,22 +102,23 @@
 <script>
     function addToCart(productType) {
         const product = {
-            type: productType,
+            id: "sepatu",
             name: "Onitsuka Tiger TOKUTEN Black/White",
             price: 250000,
             size: document.getElementById('ukuran').value,
             color: document.getElementById('warna').value,
-            image: "image/sepatu.png"
+            paymentMethod: "cash",
+            store: "Preloved By Ocaa"
         };
 
         // Get existing cart items from localStorage or initialize empty array
-        let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+        let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
 
         // Add new item to cart
         cartItems.push(product);
 
         // Save updated cart back to localStorage
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        localStorage.setItem('cart', JSON.stringify(cartItems));
 
         // Show success message
         alert('Produk berhasil ditambahkan ke keranjang!');

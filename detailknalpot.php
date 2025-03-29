@@ -16,7 +16,7 @@
                 <button onclick="addToCart('knalpot')" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
                 </button>
-                <button onclick="checkout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
+                <a href="checkout.php"><button onclick="checkout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button></a>
             </div>
             <br>
             <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
@@ -56,17 +56,33 @@
 
     function addToCart(productType) {
         const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
-        const product = {
-            type: productType,
+        if (!selectedCredit) {
+            alert('Silakan pilih metode pembayaran');
+            return;
+        }
+
+        const paymentMethod = selectedCredit.value;
+        let cartItem = {
+            id: 'knalpot',
             name: "Kenalpot DBS Ninja",
             price: PRODUCT_PRICE,
-            image: "image/knalpot.png",
-            creditOption: selectedCredit ? selectedCredit.value : 'cash'
+            paymentMethod: paymentMethod,
+            store: "Ranto Kopling"
         };
 
-        let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-        cartItems.push(product);
-        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+        if (paymentMethod !== 'cash') {
+            const calculation = calculateInstallment(PRODUCT_PRICE, parseInt(paymentMethod));
+            cartItem.installment = {
+                months: parseInt(paymentMethod),
+                monthlyPayment: calculation.monthlyPayment,
+                adminFee: calculation.adminFee,
+                totalPrice: calculation.totalPrice
+            };
+        }
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart.push(cartItem);
+        localStorage.setItem('cart', JSON.stringify(cart));
 
         alert('Produk berhasil ditambahkan ke keranjang!');
     }
