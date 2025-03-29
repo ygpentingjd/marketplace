@@ -53,7 +53,11 @@
                 <div class="mb-3 row">
                     <label class="col-sm-2 col-form-label">Kategori</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" name="kategori" value="Fashion">
+                        <select class="form-select" name="kategori">
+                            <option value="Fashion">Fashion</option>
+                            <option value="Otomotif">Otomotif</option>
+                            <option value="Elektronik">Elektronik</option>
+                        </select>
                     </div>
                 </div>
 
@@ -68,7 +72,7 @@
                 </div>
 
                 <div class="text-end mt-4">
-                    <button type="button" class="btn btn-light me-2">Kembali</button>
+                    <a href="account.php"><button type="button" class="btn btn-light me-2">Kembali</button></a>
                     <button type="button" class="btn btn-secondary me-2">Simpan & siapkan</button>
                     <button type="submit" class="btn btn-dark">Tambahkan</button>
                 </div>
