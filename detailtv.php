@@ -29,28 +29,58 @@
 <body>
     <?php include 'hf/header.php'; ?>
 
-    <div class="product-details">
-        <div class="row">
-            <div class="col-md-6">
-                <img src="image/tv.png" alt="Samsung TV 43 inch" class="product-image">
+    <div class="container" style="max-width: 1200px; margin: auto; padding: 20px; border-radius: 10px;">
+        <div class="product-detail" style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div class="product-image" style="flex: 1; min-width: 300px;">
+                <img src="image/tv.png" alt="Samsung TV 43 Inch" style="width: 100%; border-radius: 10px;">
             </div>
-            <div class="col-md-6">
-                <h1>Samsung TV 43 inch</h1>
-                <div class="price mb-3">Rp 4.500.000</div>
-
+            <div class="product-info" style="flex: 2; min-width: 300px;">
+                <h2>Samsung TV 43 Inch</h2>
+                <span class="tag" style="background: lightgreen; padding: 5px; border-radius: 5px;">Elektronik</span>
+                <h3>Rp 4.500.000</h3>
+                <br>
                 <div id="creditOptionsContainer"></div>
-
-                <div class="mt-3">
-                    <button class="btn btn-success" onclick="addToCart()">Tambah ke Keranjang</button>
-                    <a href="checkout.php"><button class="btn btn-dark" onclick="checkout()">Checkout</button></a>
+                <br>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="addToCart('tv')" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
+                    </button>
+                    <a href="checkout.php"><button onclick="checkout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button></a>
                 </div>
-
-                <div class="mt-4">
-                    <h4>Deskripsi Produk</h4>
-                    <p>TV Samsung 43 Inch OLED</p>
-                    <p>Condition: 100% mulus</p>
+                <br>
+                <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+                    <strong>Deskripsi</strong>
+                    <p>TV Samsung 43 Inch OLED<br>Condition: 100% mulus (Original)</p>
                 </div>
             </div>
+        </div>
+        <br>
+        <h3>Review terbaru</h3>
+        <div class="reviews" style="display: flex; gap: 20px;">
+            <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
+                <p>⭐⭐⭐⭐⭐</p>
+                <p>TV bagus dan original</p>
+                <br><strong>John Doe</strong>
+                <br><small>15-03-2025</small>
+            </div>
+            <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
+                <p>⭐⭐⭐⭐</p>
+                <p>Pengiriman cepat dan aman</p>
+                <br><strong>Jane Smith</strong>
+                <br><small>10-03-2024</small>
+            </div>
+            <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
+                <p>⭐⭐⭐⭐⭐</p>
+                <p>Kualitas gambar sangat bagus</p>
+                <br><strong>Mike Johnson</strong>
+                <br><small>05-02-2025</small>
+            </div>
+        </div>
+        <br>
+        <div style="text-align: center;">
+            <h3>Selamet Elektronik</h3>
+            <p>Kota Surakarta</p>
+            <button style="padding: 5px 10px; background: black; color: white; border-radius: 5px; cursor: pointer;">Kunjungi</button>
         </div>
     </div>
 
@@ -59,32 +89,31 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/credit.js"></script>
     <script>
-        const productPrice = 4500000;
+        const PRODUCT_PRICE = 4500000;
 
-        // Tampilkan opsi kredit saat halaman dimuat
         document.addEventListener('DOMContentLoaded', function() {
             const creditOptionsContainer = document.getElementById('creditOptionsContainer');
-            creditOptionsContainer.innerHTML = showCreditOptions(productPrice);
+            creditOptionsContainer.innerHTML = showCreditOptions(PRODUCT_PRICE);
         });
 
-        function addToCart() {
-            const selectedOption = document.querySelector('input[name="credit_option"]:checked');
-            if (!selectedOption) {
+        function addToCart(productType) {
+            const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
+            if (!selectedCredit) {
                 alert('Silakan pilih metode pembayaran');
                 return;
             }
 
-            const paymentMethod = selectedOption.value;
+            const paymentMethod = selectedCredit.value;
             let cartItem = {
                 id: 'tv',
-                name: 'Samsung TV 43 inch',
-                price: productPrice,
+                name: "Samsung TV 43 Inch",
+                price: PRODUCT_PRICE,
                 paymentMethod: paymentMethod,
-                store: "Preloved By Ocaa"
+                store: "Tech Store"
             };
 
             if (paymentMethod !== 'cash') {
-                const calculation = calculateInstallment(productPrice, parseInt(paymentMethod));
+                const calculation = calculateInstallment(PRODUCT_PRICE, parseInt(paymentMethod));
                 cartItem.installment = {
                     months: parseInt(paymentMethod),
                     monthlyPayment: calculation.monthlyPayment,
@@ -93,7 +122,6 @@
                 };
             }
 
-            // Simpan ke localStorage
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             cart.push(cartItem);
             localStorage.setItem('cart', JSON.stringify(cart));
@@ -102,35 +130,21 @@
         }
 
         function checkout() {
-            const selectedOption = document.querySelector('input[name="credit_option"]:checked');
-            if (!selectedOption) {
-                alert('Silakan pilih metode pembayaran');
-                return;
+            const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
+            if (!selectedCredit || selectedCredit.value === 'cash') {
+                alert('Lanjut ke pembayaran langsung: ' + formatRupiah(PRODUCT_PRICE));
+            } else {
+                const months = parseInt(selectedCredit.value);
+                const result = calculateInstallment(PRODUCT_PRICE, months);
+                alert(
+                    `Detail Pembayaran Cicilan:\n` +
+                    `- Harga Produk: ${formatRupiah(PRODUCT_PRICE)}\n` +
+                    `- Biaya Admin (2%): ${formatRupiah(result.adminFee)}\n` +
+                    `- Cicilan per Bulan: ${formatRupiah(result.monthlyPayment)}\n` +
+                    `- Tenor: ${months} bulan\n` +
+                    `- Total Pembayaran: ${formatRupiah(result.totalPrice)}`
+                );
             }
-
-            const paymentMethod = selectedOption.value;
-            let checkoutInfo = {
-                id: 'tv-samsung-43',
-                name: 'Samsung TV 43 inch',
-                price: productPrice,
-                paymentMethod: paymentMethod
-            };
-
-            if (paymentMethod !== 'cash') {
-                const calculation = calculateInstallment(productPrice, parseInt(paymentMethod));
-                checkoutInfo.installment = {
-                    months: parseInt(paymentMethod),
-                    monthlyPayment: calculation.monthlyPayment,
-                    adminFee: calculation.adminFee,
-                    totalPrice: calculation.totalPrice
-                };
-            }
-
-            // Simpan informasi checkout ke localStorage
-            localStorage.setItem('checkout', JSON.stringify(checkoutInfo));
-
-            // Redirect ke halaman checkout
-            window.location.href = 'checkout.php';
         }
     </script>
 </body>
