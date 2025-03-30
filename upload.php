@@ -1,9 +1,55 @@
+<?php
+// Handle form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Get form data
+    $nama_produk = $_POST['nama_produk'];
+    $deskripsi = $_POST['deskripsi'];
+    $kategori = $_POST['kategori'];
+    $harga = $_POST['harga'];
+
+    // Handle image uploads
+    $uploaded_images = [];
+    if (isset($_FILES['product_images'])) {
+        foreach ($_FILES['product_images']['tmp_name'] as $key => $tmp_name) {
+            $file_name = $_FILES['product_images']['name'][$key];
+            $file_size = $_FILES['product_images']['size'][$key];
+            $file_tmp = $_FILES['product_images']['tmp_name'][$key];
+            $file_type = $_FILES['product_images']['type'][$key];
+
+            // Generate unique filename
+            $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+            $new_filename = uniqid() . '.' . $file_extension;
+            $target_file = "image/" . $new_filename;
+
+            // Check if image file is actual image
+            $check = getimagesize($file_tmp);
+            if ($check !== false) {
+                // Move uploaded file
+                if (move_uploaded_file($file_tmp, $target_file)) {
+                    $uploaded_images[] = $target_file;
+                }
+            }
+        }
+    }
+
+    // Here you would typically save the product data and image paths to your database
+    // For now, we'll just show a success message
+    $success_message = "Produk berhasil ditambahkan!";
+}
+?>
 <link href="style.css" rel="stylesheet">
 <?php include 'hf/style.php'; ?>
 <?php include 'hf/header.php'; ?>
 
 <div class="container mt-4">
     <h4>Tambahkan Produk</h4>
+
+    <?php if (isset($success_message)): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo $success_message; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
 
     <div class="card mt-3">
         <div class="card-body">
@@ -13,7 +59,7 @@
                 <div class="mb-3 row">
                     <label class="col-sm-2 col-form-label">Nama produk</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" name="nama_produk" placeholder="Masukkan nama produk">
+                        <input type="text" class="form-control" name="nama_produk" placeholder="Masukkan nama produk" required>
                     </div>
                 </div>
 
@@ -22,18 +68,12 @@
                     <div class="col-sm-10">
                         <div class="row" id="imagePreviewContainer">
                             <div class="col-md-3">
-                                <div class="border rounded p-2 text-center mb-3">
-                                    <img src="image/sepatu.png" class="img-fluid mb-2" style="max-height: 150px;">
-                                    <button type="button" class="btn btn-sm btn-danger w-100">Hapus</button>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
                                 <div class="border rounded p-2 text-center mb-3 upload-box" style="height: 150px; cursor: pointer;" onclick="document.getElementById('imageUpload').click()">
                                     <div class="d-flex align-items-center justify-content-center h-100">
                                         <div>
                                             <i class="fas fa-camera fa-2x mb-2"></i>
                                             <div>Tambahkan</div>
-                                            <div><span id="imageCount">1</span>/5</div>
+                                            <div><span id="imageCount">0</span>/5</div>
                                         </div>
                                     </div>
                                 </div>
@@ -86,7 +126,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    let imageCount = 1; // Starting with 1 for the existing image
+    let imageCount = 0; // Starting with 0 for the new images
 
     function handleImageUpload(input) {
         const maxImages = 5;
