@@ -248,47 +248,56 @@
             });
 
             let cartHTML = '';
+            let globalIndex = 0;
 
             // Render items grouped by store
             for (const [store, items] of Object.entries(itemsByStore)) {
                 cartHTML += `
                     <div class="store-section">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" 
-                                onchange="toggleStore(this, '${store}')">
+                            <input class="form-check-input store-checkbox" type="checkbox" 
+                                onchange="toggleStore(this, '${store}')"
+                                data-store="${store}">
                             <label class="form-check-label store-name">
                                 ${store}
                             </label>
                         </div>
                 `;
 
-                items.forEach((item, index) => {
+                items.forEach((item) => {
                     const price = item.paymentMethod === 'installment' && item.installment ?
                         item.installment.totalPrice : item.price;
 
                     cartHTML += `
                         <div class="cart-item">
-                            <input class="form-check-input" type="checkbox" 
+                            <input class="form-check-input item-checkbox" type="checkbox" 
                                    data-store="${store}"
-                                   data-index="${index}"
+                                   data-index="${globalIndex}"
                                    data-price="${price}"
                                    onchange="updateTotal()">
-                            <img src="image/${item.id}.png" class="product-image" alt="${item.name}">
+                            <img src="${item.type === 'tv' ? 'image/tv.png' : 
+                                     item.type === 'sepatu' ? 'image/sepatu.png' : 
+                                     item.type === 'knalpot' ? 'image/knalpot.png' : 
+                                     'image/default.png'}" 
+                                 class="product-image" 
+                                 alt="${item.name}">
                             <div class="product-info">
                                 <div class="product-name">${item.name}</div>
-                                ${item.size ? `<div class="product-size">size: ${item.size}</div>` : ''}
+                                ${item.size ? `<div class="product-size">Size: ${item.size}</div>` : ''}
+                                ${item.color ? `<div class="product-size">Color: ${item.color}</div>` : ''}
                                 <div class="product-price">Rp${price.toLocaleString('id-ID')}</div>
                             </div>
                             <div class="action-buttons">
-                                <button class="action-btn" onclick="moveToWishlist(${index})">
+                                <button class="action-btn" onclick="moveToWishlist(${globalIndex})">
                                     <i class="far fa-heart"></i>
                                 </button>
-                                <button class="action-btn" onclick="removeFromCart(${index})">
+                                <button class="action-btn" onclick="removeFromCart(${globalIndex})">
                                     <i class="far fa-trash-alt"></i>
                                 </button>
                             </div>
                         </div>
                     `;
+                    globalIndex++;
                 });
 
                 cartHTML += `</div>`;
@@ -299,7 +308,7 @@
         }
 
         function toggleStore(checkbox, store) {
-            const storeItems = document.querySelectorAll(`input[data-store="${store}"]`);
+            const storeItems = document.querySelectorAll(`.item-checkbox[data-store="${store}"]`);
             storeItems.forEach(item => {
                 item.checked = checkbox.checked;
             });
@@ -307,15 +316,15 @@
         }
 
         function toggleAll(checkbox) {
-            const checkboxes = document.querySelectorAll('.cart-item input[type="checkbox"]');
-            const storeCheckboxes = document.querySelectorAll('.store-section > .form-check > input[type="checkbox"]');
-            checkboxes.forEach(item => item.checked = checkbox.checked);
+            const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+            const storeCheckboxes = document.querySelectorAll('.store-checkbox');
+            itemCheckboxes.forEach(item => item.checked = checkbox.checked);
             storeCheckboxes.forEach(item => item.checked = checkbox.checked);
             updateTotal();
         }
 
         function updateTotal() {
-            const selectedItems = document.querySelectorAll('.cart-item input[type="checkbox"]:checked');
+            const selectedItems = document.querySelectorAll('.item-checkbox:checked');
             let total = 0;
 
             selectedItems.forEach(item => {
@@ -351,7 +360,7 @@
         }
 
         function proceedToCheckout() {
-            const selectedItems = document.querySelectorAll('.cart-item input[type="checkbox"]:checked');
+            const selectedItems = document.querySelectorAll('.item-checkbox:checked');
             if (selectedItems.length === 0) {
                 alert('Silakan pilih produk yang ingin dibeli');
                 return;
@@ -360,13 +369,22 @@
             const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
             const checkoutItems = [];
 
-            selectedItems.forEach(item => {
-                const index = parseInt(item.dataset.index);
-                checkoutItems.push(cartItems[index]);
+            selectedItems.forEach(checkbox => {
+                const index = parseInt(checkbox.dataset.index);
+                const item = cartItems[index];
+                if (item) {
+                    checkoutItems.push({
+                        ...item
+                    }); // Create a copy of the item
+                }
             });
 
-            localStorage.setItem('checkoutItems', JSON.stringify(checkoutItems));
-            window.location.href = 'checkout.php';
+            if (checkoutItems.length > 0) {
+                localStorage.setItem('checkoutItems', JSON.stringify(checkoutItems));
+                window.location.href = 'checkout.php';
+            } else {
+                alert('Terjadi kesalahan saat memproses item. Silakan coba lagi.');
+            }
         }
     </script>
 </body>

@@ -16,7 +16,7 @@
                 <button onclick="addToCart('knalpot')" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
                 </button>
-                <a href="checkout.php"><button onclick="checkout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button></a>
+                <button onclick="handleCheckout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
             </div>
             <br>
             <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
@@ -64,10 +64,12 @@
         const paymentMethod = selectedCredit.value;
         let cartItem = {
             id: 'knalpot',
+            type: 'knalpot',
             name: "Kenalpot DBS Ninja",
             price: PRODUCT_PRICE,
             paymentMethod: paymentMethod,
-            store: "Ranto Kopling"
+            store: "Ranto Kopling",
+            image: "image/knalpot.png"
         };
 
         if (paymentMethod !== 'cash') {
@@ -87,22 +89,39 @@
         alert('Produk berhasil ditambahkan ke keranjang!');
     }
 
-    function checkout() {
+    function handleCheckout() {
         const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
-        if (!selectedCredit || selectedCredit.value === 'cash') {
-            alert('Lanjut ke pembayaran langsung: ' + formatRupiah(PRODUCT_PRICE));
-        } else {
-            const months = parseInt(selectedCredit.value);
-            const result = calculateInstallment(PRODUCT_PRICE, months);
-            alert(
-                `Detail Pembayaran Cicilan:\n` +
-                `- Harga Produk: ${formatRupiah(PRODUCT_PRICE)}\n` +
-                `- Biaya Admin (2%): ${formatRupiah(result.adminFee)}\n` +
-                `- Cicilan per Bulan: ${formatRupiah(result.monthlyPayment)}\n` +
-                `- Tenor: ${months} bulan\n` +
-                `- Total Pembayaran: ${formatRupiah(result.totalPrice)}`
-            );
+        if (!selectedCredit) {
+            alert('Silakan pilih metode pembayaran');
+            return;
         }
+
+        const paymentMethod = selectedCredit.value;
+        let checkoutItem = {
+            id: 'knalpot',
+            name: "Kenalpot DBS Ninja",
+            price: PRODUCT_PRICE,
+            paymentMethod: paymentMethod,
+            store: "Ranto Kopling",
+            image: "image/knalpot.png"
+        };
+
+        if (paymentMethod !== 'cash') {
+            const months = parseInt(paymentMethod);
+            const result = calculateInstallment(PRODUCT_PRICE, months);
+            checkoutItem.installment = {
+                months: months,
+                monthlyPayment: result.monthlyPayment,
+                adminFee: result.adminFee,
+                totalPrice: result.totalPrice
+            };
+        }
+
+        // Store checkout item in localStorage as a single-item array
+        localStorage.setItem('checkoutItems', JSON.stringify([checkoutItem]));
+
+        // Redirect to checkout page
+        window.location.href = 'checkout.php';
     }
 </script>
 

@@ -205,6 +205,23 @@
             border-radius: 4px;
             width: 100%;
         }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            gap: 15px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .cart-item:first-child {
+            padding-top: 0;
+        }
     </style>
 </head>
 
@@ -399,12 +416,12 @@
         });
 
         function loadCheckoutItems() {
-            // Get selected items from cart
-            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            // Get items from either checkoutItems or cart
             const checkoutItems = JSON.parse(localStorage.getItem('checkoutItems')) || [];
+            const items = checkoutItems.length > 0 ? checkoutItems : (JSON.parse(localStorage.getItem('cart')) || []);
             const productList = document.querySelector('.product-list');
 
-            if (!checkoutItems || checkoutItems.length === 0) {
+            if (items.length === 0) {
                 productList.innerHTML = `
                     <div class="text-center py-4">
                         <p class="mb-0">Tidak ada produk yang dipilih</p>
@@ -417,22 +434,18 @@
 
             // Group items by store
             const itemsByStore = {};
-            checkoutItems.forEach(item => {
-                // Cari item yang sesuai dari cart untuk mendapatkan data lengkap
-                const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
-                if (cartItem) {
-                    const store = cartItem.store || 'Preloved By Ocaa';
-                    if (!itemsByStore[store]) {
-                        itemsByStore[store] = [];
-                    }
-                    itemsByStore[store].push(cartItem);
+            items.forEach(item => {
+                const store = item.store || 'Preloved By Ocaa';
+                if (!itemsByStore[store]) {
+                    itemsByStore[store] = [];
                 }
+                itemsByStore[store].push(item);
             });
 
             let productHTML = '';
 
             // Render items grouped by store
-            for (const [store, items] of Object.entries(itemsByStore)) {
+            for (const [store, storeItems] of Object.entries(itemsByStore)) {
                 productHTML += `
                     <div class="store-section mb-4">
                         <div class="store-name mb-3">
@@ -440,16 +453,22 @@
                         </div>
                 `;
 
-                items.forEach(item => {
+                storeItems.forEach(item => {
                     const price = item.paymentMethod === 'installment' && item.installment ?
                         item.installment.totalPrice : item.price;
 
                     productHTML += `
-                        <div class="product-item">
-                            <img src="image/${item.id}.png" alt="${item.name}" class="product-image">
+                        <div class="cart-item">
+                            <img src="${item.type === 'tv' ? 'image/tv.png' : 
+                                     item.type === 'sepatu' ? 'image/sepatu.png' : 
+                                     item.type === 'knalpot' ? 'image/knalpot.png' : 
+                                     'image/default.png'}" 
+                                 class="product-image" 
+                                 alt="${item.name}">
                             <div class="product-info">
                                 <div class="product-name">${item.name}</div>
-                                ${item.size ? `<div class="product-size">size: ${item.size}</div>` : ''}
+                                ${item.size ? `<div class="product-size">Size: ${item.size}</div>` : ''}
+                                ${item.color ? `<div class="product-size">Color: ${item.color}</div>` : ''}
                                 <div class="product-price">Rp${price.toLocaleString('id-ID')}</div>
                             </div>
                         </div>
@@ -464,17 +483,15 @@
         }
 
         function updateTotals() {
+            // Get items from either checkoutItems or cart
             const checkoutItems = JSON.parse(localStorage.getItem('checkoutItems')) || [];
-            const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            const items = checkoutItems.length > 0 ? checkoutItems : (JSON.parse(localStorage.getItem('cart')) || []);
             let subtotal = 0;
 
-            checkoutItems.forEach(item => {
-                const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
-                if (cartItem) {
-                    const price = cartItem.paymentMethod === 'installment' && cartItem.installment ?
-                        cartItem.installment.totalPrice : cartItem.price;
-                    subtotal += price;
-                }
+            items.forEach(item => {
+                const price = item.paymentMethod === 'installment' && item.installment ?
+                    item.installment.totalPrice : item.price;
+                subtotal += price;
             });
 
             const shippingCost = 15000;
@@ -492,7 +509,7 @@
 
             // Disable order button if no items
             const orderButton = document.querySelector('.btn-order');
-            if (checkoutItems.length === 0) {
+            if (items.length === 0) {
                 orderButton.disabled = true;
                 orderButton.style.opacity = '0.5';
             } else {
@@ -585,8 +602,9 @@
         function placeOrder() {
             const checkoutItems = JSON.parse(localStorage.getItem('checkoutItems')) || [];
             const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            const items = checkoutItems.length > 0 ? checkoutItems : cartItems;
 
-            if (checkoutItems.length === 0) {
+            if (items.length === 0) {
                 alert('Tidak ada produk yang dipilih');
                 window.location.href = 'cart.php';
                 return;
@@ -653,7 +671,7 @@
 
             // Create order data
             const orderData = {
-                items: checkoutItems,
+                items: items,
                 payment: paymentDetails,
                 note: note,
                 dropship: dropshipData,
@@ -665,12 +683,12 @@
             orders.push(orderData);
             localStorage.setItem('orders', JSON.stringify(orders));
 
-            // Remove checked items from cart
-            const remainingItems = cartItems.filter(item =>
-                !checkoutItems.some(checkoutItem => checkoutItem.id === item.id)
-            );
-            localStorage.setItem('cart', JSON.stringify(remainingItems));
-            localStorage.removeItem('checkoutItems');
+            // Clear cart or checkout items
+            if (checkoutItems.length > 0) {
+                localStorage.removeItem('checkoutItems');
+            } else {
+                localStorage.removeItem('cart');
+            }
 
             // Show success message and redirect
             alert('Pesanan berhasil dibuat!');

@@ -25,7 +25,7 @@
                 <button onclick="addToCart('sepatu')" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
                 </button>
-                <a href="checkout.php"><button style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button></a>
+                <button onclick="handleCheckout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
             </div>
             <br><br>
             <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
@@ -102,26 +102,50 @@
 <script>
     function addToCart(productType) {
         const product = {
-            id: "sepatu",
+            type: 'sepatu',
+            id: 'sepatu',
             name: "Onitsuka Tiger TOKUTEN Black/White",
             price: 250000,
             size: document.getElementById('ukuran').value,
             color: document.getElementById('warna').value,
+            image: "image/sepatu.png",
+            store: "Preloved By Ocaa",
             paymentMethod: "cash",
-            store: "Preloved By Ocaa"
+            quantity: 1
         };
 
         // Get existing cart items from localStorage or initialize empty array
-        let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
         // Add new item to cart
-        cartItems.push(product);
+        cart.push(product);
 
         // Save updated cart back to localStorage
-        localStorage.setItem('cart', JSON.stringify(cartItems));
+        localStorage.setItem('cart', JSON.stringify(cart));
 
         // Show success message
         alert('Produk berhasil ditambahkan ke keranjang!');
+    }
+
+    function handleCheckout() {
+        const checkoutItem = {
+            id: 'sepatu',
+            type: 'sepatu',
+            name: "Onitsuka Tiger TOKUTEN Black/White",
+            price: 250000,
+            size: document.getElementById('ukuran').value,
+            color: document.getElementById('warna').value,
+            image: "image/sepatu.png",
+            store: "Preloved By Ocaa",
+            paymentMethod: "cash",
+            quantity: 1
+        };
+
+        // Store checkout item in localStorage as a single-item array
+        localStorage.setItem('checkoutItems', JSON.stringify([checkoutItem]));
+
+        // Redirect to checkout page
+        window.location.href = 'checkout.php';
     }
 </script>
 <?php include 'hf/footer.php'; ?>
