@@ -397,7 +397,7 @@
                         </div>
                     </div>
                     <textarea class="note-input mb-3" placeholder="Catatan untuk penjual (opsional)"></textarea>
-                    <button class="btn-order" onclick="placeOrder()">Buat Pesanan</button>
+                    <a href="orders.php"><button class="btn-order" onclick="placeOrder()">Buat Pesanan</button></a>
                 </div>
             </div>
         </div>

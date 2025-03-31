@@ -150,7 +150,7 @@ session_start();
                 </div>
 
                 <div class="menu-items">
-                    <a href="purchase_history.php" class="menu-item">
+                    <a href="orders.php" class="menu-item">
                         <i class="fas fa-history"></i>
                         <span>Riwayat Pembelian</span>
                     </a>
