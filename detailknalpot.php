@@ -99,6 +99,7 @@
         const paymentMethod = selectedCredit.value;
         let checkoutItem = {
             id: 'knalpot',
+            type: 'knalpot',
             name: "Kenalpot DBS Ninja",
             price: PRODUCT_PRICE,
             paymentMethod: paymentMethod,
