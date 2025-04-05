@@ -192,13 +192,13 @@ include 'templates/header.php';
                                     while ($row = $result->fetch_assoc()) {
                                         $status_class = '';
                                         switch ($row['verification_status']) {
-                                            case 'verified':
+                                            case 'terverifikasi':
                                                 $status_class = 'badge-success';
                                                 break;
-                                            case 'pending':
+                                            case 'menunggu':
                                                 $status_class = 'badge-warning';
                                                 break;
-                                            case 'rejected':
+                                            case 'ditolak':
                                                 $status_class = 'badge-danger';
                                                 break;
                                         }

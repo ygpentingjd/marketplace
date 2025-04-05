@@ -122,13 +122,13 @@ include 'templates/header.php';
                                     $status = isset($product['verification_status']) ? $product['verification_status'] : 'pending';
 
                                     switch ($status) {
-                                        case 'verified':
+                                        case 'terverifikasi':
                                             $status_class = 'badge-success';
                                             break;
-                                        case 'pending':
+                                        case 'menunggu':
                                             $status_class = 'badge-warning';
                                             break;
-                                        case 'rejected':
+                                        case 'ditolak':
                                             $status_class = 'badge-danger';
                                             break;
                                     }

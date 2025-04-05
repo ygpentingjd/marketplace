@@ -16,7 +16,7 @@ try {
 }
 
 // Initialize variables
-$product = [
+$product = [    
     'id_produk' => '',
     'nama_produk' => '',
     'deskripsi' => '',

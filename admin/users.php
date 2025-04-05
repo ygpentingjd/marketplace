@@ -125,9 +125,9 @@ include 'templates/header.php';
                                         <input type="hidden" name="user_id" value="<?php echo $user['id_user']; ?>">
                                         <input type="hidden" name="change_role" value="1">
                                         <select name="role" class="form-control form-control-sm role-select" <?php echo $user['id_user'] == $_SESSION['admin_id'] ? 'disabled' : ''; ?>>
-                                            <option value="user" <?php echo $user['role'] == 'user' ? 'selected' : ''; ?>>User</option>
+                                            <option value="pembeli" <?php echo $user['role'] == 'pembeli' ? 'selected' : ''; ?>>Pembeli</option>
                                             <option value="admin" <?php echo $user['role'] == 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                            <option value="seller" <?php echo $user['role'] == 'seller' ? 'selected' : ''; ?>>Seller</option>
+                                            <option value="penjual" <?php echo $user['role'] == 'penjual' ? 'selected' : ''; ?>>Penjual</option>
                                         </select>
                                     </form>
                                 </td>

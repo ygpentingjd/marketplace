@@ -233,13 +233,13 @@ include 'templates/header.php';
                         <div class="form-group">
                             <label for="role">Role</label>
                             <select class="form-control" id="role" name="role">
-                                <option value="user" <?php echo $user['role'] == 'user' ? 'selected' : ''; ?>>User</option>
+                                <option value="pembeli" <?php echo $user['role'] == 'user' ? 'selected' : ''; ?>>Pembeli</option>
                                 <option value="admin" <?php echo $user['role'] == 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                <option value="seller" <?php echo $user['role'] == 'seller' ? 'selected' : ''; ?>>Seller</option>
+                                <option value="penjual" <?php echo $user['role'] == 'seller' ? 'selected' : ''; ?>>Penjual</option>
                             </select>
                         </div>
                     </div>
-                </div>
+                </div>  
 
                 <div class="form-group mt-4">
                     <button type="submit" class="btn btn-primary">
