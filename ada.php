@@ -14,8 +14,11 @@
   <?php include 'hf/header.php'; ?>
 
   <!-- Konten -->
-  <?php include 'Homepage/index.php'; ?>
-
+   <main class="container">
+    <div class="bg-body-tertiary p-5 rounded">
+      <?php include 'Homepage/index.php'; ?>
+    </div>
+  </main>
   <!-- Footers -->
   <?php include 'hf/footer.php'; ?>
 </body>

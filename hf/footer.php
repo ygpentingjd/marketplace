@@ -1,7 +1,7 @@
 <?php include "style.php"; ?>
- <link href="style.css" rel="stylesheet">
+ <link href="hf/style.css" rel="stylesheet">
   <div class="container">
-     <footer class="d-flex justify-content-between row row-cols-1 row-cols-sm-2 row-cols-md-4 py-2 my-2 border-top">
+     <footer class="d-flex justify-content-between row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 my-5 border-top">
 
          <div class="col mb-3">
              <h5>Bantaun</h5>
