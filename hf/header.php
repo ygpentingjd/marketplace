@@ -60,7 +60,7 @@
                     <li class="nav-item"><a class="nav-link" href="live.php">Live</a></li>
                     <li class="nav-item"><a class="nav-link" href="trending.php">Trending</a></li>
                 </ul>
-                <a href="#" class="ms-auto support-icon"><img src="image/support.png" alt="Support"></a>
+                <a href="https://wa.me/+6285742708990" class="ms-auto support-icon"><img src="image/support.png" alt="Support"></a>
             </div>
         </div>
     </nav>

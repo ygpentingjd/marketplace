@@ -26,6 +26,11 @@
                     <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
                 </button>
                 <button onclick="handleCheckout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
+                <a href="https://wa.me/+6285742708990?text=Halo,%20saya%20tertarik%20dengan%20produk:%20Onitsuka%20Tiger%20TOKUTEN%20Black/White" 
+                   style="flex: 1; padding: 10px; background: #25D366; color: white; text-align: center; border-radius: 5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;"
+                   target="_blank">
+                   <i class="fab fa-whatsapp"></i> Chat WhatsApp
+                </a>
             </div>
             <br><br>
             <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
@@ -65,39 +70,7 @@
         <p>Kota Surakarta</p>
         <button style="padding: 5px 10px; background: black; color: white; border-radius: 5px; cursor: pointer;">Kunjungi</button>
     </div>
-</div>
-<br>
-<h3>Riview terbaru</h3>
-<div class="reviews" style="display: flex; gap: 20px;">
-    <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
-        <p>⭐⭐⭐⭐⭐</p>
-        <p>Produk sangat bagus dan ori</p>
-        <small>White/40</small>
-        <br><strong>Kintan</strong>
-        <br><small>02-01-2022</small>
-    </div>
-    <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
-        <p>⭐⭐⭐⭐</p>
-        <p>Pengiriman cepat dan murah</p>
-        <small>White/40</small>
-        <br><strong>Lisa Blekping</strong>
-        <br><small>17-02-2022</small>
-    </div>
-    <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
-        <p>⭐⭐⭐⭐⭐</p>
-        <p>Ori dan kualitas bagus</p>
-        <small>Black/40</small>
-        <br><strong>Agnez Mo</strong>
-        <br><small>20-01-2025</small>
-    </div>
-</div>
-<br>
-<div style="text-align: center;">
-    <h3>Preloved By Ocaa</h3>
-    <p>Kota Surakarta</p>
-    <button style="padding: 5px 10px; background: black; color: white; border-radius: 5px; cursor: pointer;">Kunjungi</button>
-</div>
-</div>
+
 
 <script>
     function addToCart(productType) {

@@ -29,6 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['id_user'] = $user['id_user'];
             $_SESSION['nama'] = $user['nama'];
             $_SESSION['email'] = $user['email'];
+            $_SESSION['role'] = $user['role'];
             header("Location: account.php");
             exit();
         } else {

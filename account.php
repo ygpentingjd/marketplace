@@ -162,6 +162,12 @@ session_start();
                         <i class="fas fa-star"></i>
                         <span>Beri Review</span>
                     </a>
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                    <a href="admin/login.php" class="menu-item">
+                        <i class="fas fa-user"></i>
+                        <span>Dashboard Admin</span>
+                    </a>
+                    <?php endif; ?>
                     <a href="settings.php" class="menu-item">
                         <i class="fas fa-cog"></i>
                         <span>Pengaturan</span>

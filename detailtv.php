@@ -46,6 +46,11 @@
                         <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
                     </button>
                     <button onclick="handleCheckout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
+                    <a href="https://wa.me/+6282310598605?text=Halo,%20saya%20tertarik%20dengan%20produk:%20TV%20Samsung%2043%20Inch%20OLED"
+                        style="flex: 1; padding: 10px; background: #25D366; color: white; text-align: center; border-radius: 5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;"
+                        target="_blank">
+                        <i class="fab fa-whatsapp"></i> Chat WhatsApp
+                    </a>
                 </div>
                 <br>
                 <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
