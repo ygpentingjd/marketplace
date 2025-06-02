@@ -66,9 +66,10 @@ if (!in_array($status_filter, $valid_statuses)) {
 }
 
 $products = [];
-$query = "SELECT p.*, u.nama as seller_name 
+$query = "SELECT p.*, u.nama as seller_name, c.nama_kategori 
           FROM products p 
           INNER JOIN users u ON p.id_user = u.id_user 
+          LEFT JOIN categories c ON p.id_kategori = c.id_kategori 
           WHERE 1=1";
 
 if ($status_filter != 'all') {
@@ -198,6 +199,8 @@ include 'templates/header.php';
                             <th>Harga</th>
                             <th>Penjual</th>
                             <th>Kategori</th>
+                            <th>Stok</th>
+                            <th>Kondisi</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -208,7 +211,7 @@ include 'templates/header.php';
                                 <td><?php echo $product['id_produk']; ?></td>
                                 <td>
                                     <?php if (!empty($product['gambar'])): ?>
-                                        <img src="../uploads/products/<?php echo htmlspecialchars($product['gambar']); ?>"
+                                        <img src="../<?php echo htmlspecialchars($product['gambar']); ?>"
                                             alt="<?php echo htmlspecialchars($product['nama_produk']); ?>"
                                             class="img-thumbnail"
                                             style="max-width: 100px;">
@@ -219,7 +222,9 @@ include 'templates/header.php';
                                 <td><?php echo htmlspecialchars($product['nama_produk']); ?></td>
                                 <td>Rp <?php echo number_format($product['harga'], 0, ',', '.'); ?></td>
                                 <td><?php echo htmlspecialchars($product['seller_name']); ?></td>
-                                <td><?php echo htmlspecialchars($product['id_kategori']); ?></td>
+                                <td><?php echo htmlspecialchars($product['nama_kategori'] ?? 'Unknown'); ?></td>
+                                <td><?php echo $product['stok']; ?> unit</td>
+                                <td><?php echo ucfirst($product['kondisi']); ?></td>
                                 <td>
                                     <?php
                                     $status_class = '';

@@ -45,9 +45,12 @@ if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
     }
 }
 
-// Get all products
+// Get all products with category names
 $products = [];
-$query = "SELECT * FROM products ORDER BY id_produk DESC";
+$query = "SELECT p.*, c.nama_kategori 
+          FROM products p 
+          LEFT JOIN categories c ON p.id_kategori = c.id_kategori 
+          ORDER BY p.id_produk DESC";
 $result = $conn->query($query);
 
 if ($result) {
@@ -98,6 +101,8 @@ include 'templates/header.php';
                             <th>Name</th>
                             <th>Price</th>
                             <th>Category</th>
+                            <th>Stock</th>
+                            <th>Condition</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -108,32 +113,23 @@ include 'templates/header.php';
                                 <td><?php echo $product['id_produk']; ?></td>
                                 <td>
                                     <?php if (!empty($product['gambar'])): ?>
-                                        <img src="<?php echo '../' . $product['gambar']; ?>" alt="<?php echo htmlspecialchars($product['nama_produk']); ?>" width="50">
+                                        <img src="../<?php echo htmlspecialchars($product['gambar']); ?>"
+                                            alt="<?php echo htmlspecialchars($product['nama_produk']); ?>"
+                                            width="50"
+                                            class="img-thumbnail">
                                     <?php else: ?>
                                         <span class="text-muted">No image</span>
                                     <?php endif; ?>
                                 </td>
                                 <td><?php echo htmlspecialchars($product['nama_produk']); ?></td>
                                 <td>Rp <?php echo number_format($product['harga'], 0, ',', '.'); ?></td>
-                                <td><?php echo htmlspecialchars($product['id_kategori']); ?></td>
+                                <td><?php echo htmlspecialchars($product['nama_kategori'] ?? 'Unknown'); ?></td>
+                                <td><?php echo $product['stok']; ?> unit</td>
+                                <td><?php echo ucfirst($product['kondisi']); ?></td>
                                 <td>
-                                    <?php
-                                    $status_class = '';
-                                    $status = isset($product['verification_status']) ? $product['verification_status'] : 'pending';
-
-                                    switch ($status) {
-                                        case 'terverifikasi':
-                                            $status_class = 'badge-success';
-                                            break;
-                                        case 'menunggu':
-                                            $status_class = 'badge-warning';
-                                            break;
-                                        case 'ditolak':
-                                            $status_class = 'badge-danger';
-                                            break;
-                                    }
-                                    ?>
-                                    <span class="badge <?php echo $status_class; ?>"><?php echo ucfirst($status); ?></span>
+                                    <span class="badge <?php echo $product['verification_status'] == 'terverifikasi' ? 'bg-success' : ($product['verification_status'] == 'ditolak' ? 'bg-danger' : 'bg-warning'); ?>">
+                                        <?php echo ucfirst($product['verification_status']); ?>
+                                    </span>
                                 </td>
                                 <td class="action-buttons">
                                     <a href="product_form.php?edit=<?php echo $product['id_produk']; ?>" class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Edit">

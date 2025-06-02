@@ -1,15 +1,36 @@
+<?php
+include 'koneksi.php';
+
+$product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// Fetch product details
+$product = null;
+if ($product_id > 0) {
+    $stmt = $conn->prepare("SELECT * FROM products WHERE id_produk = ? AND id_kategori = 3");
+    $stmt->bind_param("i", $product_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $product = $result->fetch_assoc();
+}
+
+if (!$product) {
+    die("Product not found.");
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samsung TV 43 inch - Detail Produk</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title><?php echo htmlspecialchars($product['nama_produk']); ?> - Detail Produk</title>
+    <?php include 'hf/style.php'; ?>
     <style>
         .product-image {
             max-width: 100%;
             height: auto;
+            border-radius: 10px;
         }
 
         .product-details {
@@ -23,69 +44,119 @@
             font-weight: bold;
             color: #2c3e50;
         }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .description {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-buttons button,
+        .action-buttons a {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .btn-cart {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-checkout {
+            background: #000;
+            color: white;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .tag.elektronik {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
     </style>
 </head>
 
 <body>
     <?php include 'hf/header.php'; ?>
 
-    <div class="container" style="max-width: 1200px; margin: auto; padding: 20px; border-radius: 10px;">
-        <div class="product-detail" style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <div class="product-image" style="flex: 1; min-width: 300px;">
-                <img src="image/tv.png" alt="Samsung TV 43 Inch" style="width: 100%; border-radius: 10px;">
+    <div class="container" style="max-width: 1200px; margin: auto; padding: 20px;">
+        <div class="row">
+            <div class="col-md-6">
+                <img src="<?php echo $product['gambar']; ?>"
+                    alt="<?php echo htmlspecialchars($product['nama_produk']); ?>"
+                    class="product-image">
             </div>
-            <div class="product-info" style="flex: 2; min-width: 300px;">
-                <h2>Samsung TV 43 Inch</h2>
-                <span class="tag" style="background: lightgreen; padding: 5px; border-radius: 5px;">Elektronik</span>
-                <h3>Rp 4.500.000</h3>
-                <br>
-                <div id="creditOptionsContainer"></div>
-                <br>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="addToCart('tv')" style="flex: 1; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
-                    </button>
-                    <button onclick="handleCheckout()" style="flex: 1; padding: 10px; background: black; color: white; border: none; border-radius: 5px; cursor: pointer;">Checkout</button>
-                    <a href="https://wa.me/+6282310598605?text=Halo,%20saya%20tertarik%20dengan%20produk:%20TV%20Samsung%2043%20Inch%20OLED"
-                        style="flex: 1; padding: 10px; background: #25D366; color: white; text-align: center; border-radius: 5px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;"
-                        target="_blank">
+            <div class="col-md-6 product-info">
+                <h1><?php echo htmlspecialchars($product['nama_produk']); ?></h1>
+                <span class="tag elektronik">Elektronik</span>
+                <div class="price">Rp <?php echo number_format($product['harga'], 0, ',', '.'); ?></div>
+
+                <div class="action-buttons">
+                    <form method="POST" action="cart.php" style="display:inline;">
+                        <input type="hidden" name="id_produk" value="<?php echo $product['id_produk']; ?>">
+                        <input type="hidden" name="qty" value="1">
+                        <button type="submit" class="btn-cart">
+                            <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
+                        </button>
+                    </form>
+                    <form method="POST" action="checkout.php" style="display:inline;">
+                        <input type="hidden" name="id_produk" value="<?php echo $product['id_produk']; ?>">
+                        <input type="hidden" name="qty" value="1">
+                        <button type="submit" class="btn-checkout">Checkout</button>
+                    </form>
+                    <a href="https://wa.me/+6282310598605?text=Halo,%20saya%20tertarik%20dengan%20produk:%20<?php echo urlencode($product['nama_produk']); ?>"
+                        class="btn-whatsapp" target="_blank">
                         <i class="fab fa-whatsapp"></i> Chat WhatsApp
                     </a>
                 </div>
-                <br>
-                <div class="description" style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
-                    <strong>Deskripsi</strong>
-                    <p>TV Samsung 43 Inch OLED<br>Condition: 100% mulus (Original)</p>
+
+                <div class="description">
+                    <h4>Deskripsi Produk</h4>
+                    <p><?php echo nl2br(htmlspecialchars($product['deskripsi'] ?? 'Tidak ada deskripsi produk.')); ?></p>
                 </div>
+
+                <?php if ($product['stok'] > 0): ?>
+                    <div class="tag" style="background: #e8f5e9; color: #2e7d32;">
+                        Stok: <?php echo $product['stok']; ?> unit
+                    </div>
+                <?php else: ?>
+                    <div class="tag" style="background: #ffebee; color: #c62828;">
+                        Stok Habis
+                    </div>
+                <?php endif; ?>
             </div>
-        </div>
-        <br>
-        <h3>Review terbaru</h3>
-        <div class="reviews" style="display: flex; gap: 20px;">
-            <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
-                <p>⭐⭐⭐⭐⭐</p>
-                <p>TV bagus dan original</p>
-                <br><strong>John Doe</strong>
-                <br><small>15-03-2025</small>
-            </div>
-            <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
-                <p>⭐⭐⭐⭐</p>
-                <p>Pengiriman cepat dan aman</p>
-                <br><strong>Jane Smith</strong>
-                <br><small>10-03-2024</small>
-            </div>
-            <div class="review-card" style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 10px;">
-                <p>⭐⭐⭐⭐⭐</p>
-                <p>Kualitas gambar sangat bagus</p>
-                <br><strong>Mike Johnson</strong>
-                <br><small>05-02-2025</small>
-            </div>
-        </div>
-        <br>
-        <div style="text-align: center;">
-            <h3>Tech Store</h3>
-            <p>Kota Surakarta</p>
-            <button style="padding: 5px 10px; background: black; color: white; border-radius: 5px; cursor: pointer;">Kunjungi</button>
         </div>
     </div>
 
@@ -94,7 +165,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/credit.js"></script>
     <script>
-        const PRODUCT_PRICE = 4500000;
+        const PRODUCT_PRICE = <?php echo $product['harga']; ?>;
 
         document.addEventListener('DOMContentLoaded', function() {
             const creditOptionsContainer = document.getElementById('creditOptionsContainer');
@@ -112,11 +183,11 @@
             let cartItem = {
                 id: 'tv',
                 type: 'tv',
-                name: "Samsung TV 43 Inch",
+                name: "<?php echo htmlspecialchars($product['nama_produk']); ?>",
                 price: PRODUCT_PRICE,
                 paymentMethod: paymentMethod,
                 store: "Tech Store",
-                image: "image/tv.png"
+                image: "uploads/<?php echo $product['gambar']; ?>"
             };
 
             if (paymentMethod !== 'cash') {
@@ -147,11 +218,11 @@
             let checkoutItem = {
                 id: 'tv',
                 type: 'tv',
-                name: "Samsung TV 43 Inch",
+                name: "<?php echo htmlspecialchars($product['nama_produk']); ?>",
                 price: PRODUCT_PRICE,
                 paymentMethod: paymentMethod,
                 store: "Tech Store",
-                image: "image/tv.png"
+                image: "uploads/<?php echo $product['gambar']; ?>"
             };
 
             if (paymentMethod !== 'cash') {

@@ -155,10 +155,10 @@ session_start();
                         <span>Riwayat Pembelian</span>
                     </a>
                     <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['penjual', 'admin'])): ?>
-                    <a href="upload.php" class="menu-item">
-                        <i class="fas fa-upload"></i>
-                        <span>Upload Barang</span>
-                    </a>
+                        <a href="upload.php" class="menu-item">
+                            <i class="fas fa-upload"></i>
+                            <span>Upload Barang</span>
+                        </a>
                     <?php endif; ?>
                     <a href="reviews.php" class="menu-item">
                         <i class="fas fa-star"></i>
