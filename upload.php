@@ -2,6 +2,15 @@
 include 'koneksi.php';
 session_start(); // Add session start for notifications
 
+// Cek jika user belum login atau bukan penjual
+if (!isset($_SESSION['id_user']) || !isset($_SESSION['role']) || $_SESSION['role'] != 'penjual') {
+    header("Location: login.php?error=unauthorized&message=Hanya+penjual+yang+bisa+mengakses+halaman+ini");
+    exit();
+}
+
+// Ambil data penjual
+$id_user = $_SESSION['id_user'];
+
 // Enable error reporting and logging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -211,10 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $conn->prepare("INSERT INTO products (nama_produk, deskripsi, id_kategori, harga, stok, kondisi, gambar, status, verification_status, id_user) 
                                VALUES (?, ?, ?, ?, ?, ?, ?, 'tersedia', 'terverifikasi', ?)");
 
-        // Get user ID from session or use default
-        $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
-
-        $stmt->bind_param("ssidissi", $nama_produk, $deskripsi, $category_id, $harga, $stok, $kondisi, $main_image, $user_id);
+        $stmt->bind_param("ssidissi", $nama_produk, $deskripsi, $category_id, $harga, $stok, $kondisi, $main_image, $id_user);
 
         if (!$stmt->execute()) {
             throw new Exception("Gagal menyimpan produk: " . $stmt->error);
@@ -268,6 +274,16 @@ $error_message = isset($_SESSION['error']) ? $_SESSION['error'] : '';
 // Clear session messages
 unset($_SESSION['success']);
 unset($_SESSION['error']);
+
+// Ambil daftar kategori untuk dropdown
+$kategori_query = "SELECT * FROM categories";
+$kategori_result = $conn->query($kategori_query);
+$categories = [];
+if ($kategori_result) {
+    while ($row = $kategori_result->fetch_assoc()) {
+        $categories[] = $row;
+    }
+}
 ?>
 
 <link href="style.css" rel="stylesheet">
@@ -337,9 +353,11 @@ unset($_SESSION['error']);
                     <div class="col-sm-10">
                         <select class="form-select" name="kategori" required>
                             <option value="">Pilih Kategori</option>
-                            <option value="Elektronik" <?php echo (isset($_POST['kategori']) && $_POST['kategori'] == 'Elektronik') ? 'selected' : ''; ?>>Elektronik</option>
-                            <option value="Fashion" <?php echo (isset($_POST['kategori']) && $_POST['kategori'] == 'Fashion') ? 'selected' : ''; ?>>Fashion</option>
-                            <option value="Otomotif" <?php echo (isset($_POST['kategori']) && $_POST['kategori'] == 'Otomotif') ? 'selected' : ''; ?>>Otomotif</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?php echo $category['id_kategori']; ?>">
+                                    <?php echo htmlspecialchars($category['nama_kategori']); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>

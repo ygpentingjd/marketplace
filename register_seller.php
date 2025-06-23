@@ -15,6 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $nomor_telepon = $_POST['nomor_telepon'];
     $alamat = $_POST['alamat'];
+    $role = 'penjual';
 
     try {
         // Cek apakah email sudah terdaftar
@@ -27,14 +28,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $error = "Email sudah terdaftar!";
         } else {
-            // Insert user baru
-            $sql = "INSERT INTO users (nama, email, password, nomor_telepon, alamat) 
-                    VALUES (?, ?, ?, ?, ?)";
+            // Insert user baru dengan role penjual
+            $sql = "INSERT INTO users (nama, email, password, nomor_telepon, alamat, role) 
+                    VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssss", $nama, $email, $password, $nomor_telepon, $alamat);
+            $stmt->bind_param("ssssss", $nama, $email, $password, $nomor_telepon, $alamat, $role);
 
             if ($stmt->execute()) {
-                $_SESSION['success'] = "Registrasi berhasil! Silakan login.";
+                $_SESSION['success'] = "Registrasi penjual berhasil! Silakan login.";
                 header("Location: login2.php");
                 exit();
             } else {
@@ -46,14 +47,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - K.O</title>
+    <title>Daftar Penjual - K.O</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
@@ -96,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 10px;
             margin: 10px 0;
             border-radius: 5px;
-            background-color: #28a745;
+            background-color: #ff9800;
             color: white;
             border: none;
             cursor: pointer;
@@ -104,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         button:hover {
-            background-color: #218838;
+            background-color: #e65100;
         }
 
         .link {
@@ -162,7 +162,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body>
     <div class="register-box">
-        <h2>Register</h2>
+        <h2>Daftar Penjual</h2>
         <?php if (isset($error)): ?>
             <div class="error-message"><?php echo $error; ?></div>
         <?php endif; ?>
@@ -171,75 +171,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label>Nama Lengkap</label>
                 <input type="text" name="nama" required>
             </div>
-
             <div class="form-group">
                 <label>Email</label>
                 <input type="email" name="email" id="email" required>
                 <div id="emailFeedback"></div>
             </div>
-
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" name="password" required>
             </div>
-
             <div class="form-group">
                 <label>Nomor Telepon</label>
                 <input type="tel" name="nomor_telepon" pattern="[0-9]{10,13}" required>
             </div>
-
             <div class="form-group">
                 <label>Alamat</label>
                 <input type="text" name="alamat" required>
             </div>
-
-            <button type="submit" id="submitBtn">Register</button>
+            <button type="submit" id="submitBtn">Daftar Penjual</button>
             <p class="link">Sudah punya akun? <a href="login2.php">Login</a></p>
         </form>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
-            let emailTimeout;
-            let isEmailAvailable = false;
-
             $('#email').on('input', function() {
-                clearTimeout(emailTimeout);
-                const email = $(this).val();
-                const emailFeedback = $('#emailFeedback');
-                const submitBtn = $('#submitBtn');
-
+                var email = $(this).val();
                 if (email.length > 0) {
-                    emailTimeout = setTimeout(function() {
-                        $.ajax({
-                            url: 'check_email.php',
-                            type: 'POST',
-                            data: { email: email },
-                            success: function(response) {
-                                if (response.trim() === 'available') {
-                                    emailFeedback.html('Email tersedia').removeClass('taken').addClass('available');
-                                    isEmailAvailable = true;
-                                    submitBtn.prop('disabled', false);
-                                } else {
-                                    emailFeedback.html('Email sudah terdaftar').removeClass('available').addClass('taken');
-                                    isEmailAvailable = false;
-                                    submitBtn.prop('disabled', true);
-                                }
+                    $.ajax({
+                        url: 'check_email.php',
+                        method: 'POST',
+                        data: {
+                            email: email
+                        },
+                        success: function(response) {
+                            if (response === 'available') {
+                                $('#emailFeedback').text('Email tersedia').removeClass('taken').addClass('available');
+                            } else {
+                                $('#emailFeedback').text('Email sudah terdaftar').removeClass('available').addClass('taken');
                             }
-                        });
-                    }, 500);
+                        }
+                    });
                 } else {
-                    emailFeedback.html('');
-                    submitBtn.prop('disabled', false);
-                }
-            });
-
-            $('#registerForm').on('submit', function(e) {
-                const email = $('#email').val();
-                if (email.length > 0 && !isEmailAvailable) {
-                    e.preventDefault();
-                    alert('Silakan gunakan email lain yang tersedia.');
+                    $('#emailFeedback').text('');
                 }
             });
         });

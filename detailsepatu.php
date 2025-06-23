@@ -13,6 +13,31 @@ if ($product_id > 0) {
     $product = $result->fetch_assoc();
 }
 
+// Tambahkan query untuk mengambil data penjual
+$seller_query = $conn->prepare("SELECT u.nama, u.nomor_telepon FROM users u JOIN products p ON u.id_user = p.id_user WHERE p.id_produk = ?");
+$seller_query->bind_param("i", $product_id);
+$seller_query->execute();
+$seller_result = $seller_query->get_result();
+$seller_data = $seller_result->fetch_assoc();
+
+// Get reviews for this product
+$reviews_query = "SELECT r.*, u.nama as reviewer_name 
+                 FROM reviews r 
+                 JOIN users u ON r.id_user = u.id_user 
+                 WHERE r.id_produk = ? 
+                 ORDER BY r.tanggal_review DESC";
+$stmt = $conn->prepare($reviews_query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$reviews = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Calculate average rating
+$avg_rating = 0;
+if (!empty($reviews)) {
+    $total_rating = array_sum(array_column($reviews, 'rating'));
+    $avg_rating = $total_rating / count($reviews);
+}
+
 if (!$product) {
     die("Product not found.");
 }
@@ -160,6 +185,40 @@ if (!$product) {
             margin-bottom: 5px;
             color: #666;
         }
+
+        /* Review Styles */
+        .star-rating {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+        .star-rating .far {
+            color: #e4e5e9;
+        }
+        .review-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .review-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .review-content {
+            margin-top: 10px;
+        }
+        .rating-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -178,6 +237,80 @@ if (!$product) {
                 <span class="tag fashion">Fashion</span>
                 <div class="price">Rp <?php echo number_format($product['harga'], 0, ',', '.'); ?></div>
 
+                <!-- Rating Summary -->
+                <div class="rating-summary mt-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <h2 class="mb-0"><?php echo number_format($avg_rating, 1); ?></h2>
+                            <div class="star-rating">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <?php if ($i <= round($avg_rating)): ?>
+                                        <i class="fas fa-star"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-star"></i>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                            </div>
+                            <p class="text-muted mb-0"><?php echo count($reviews); ?> ulasan</p>
+                        </div>
+                        <div class="col-md-8">
+                            <?php
+                            $rating_counts = array_count_values(array_column($reviews, 'rating'));
+                            for ($i = 5; $i >= 1; $i--):
+                                $count = $rating_counts[$i] ?? 0;
+                                $percentage = count($reviews) > 0 ? ($count / count($reviews)) * 100 : 0;
+                            ?>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="me-2" style="width: 60px;"><?php echo $i; ?> bintang</div>
+                                <div class="progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                         style="width: <?php echo $percentage; ?>%"></div>
+                                </div>
+                                <div class="ms-2" style="width: 40px;"><?php echo $count; ?></div>
+                            </div>
+                            <?php endfor; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="specs" id="creditOptionsContainer">
+                    <h4>Opsi Cicilan</h4>
+                    <div class="credit-options">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="credit_option" value="3" id="credit3">
+                            <label class="form-check-label" for="credit3">Cicilan 3 Bulan</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="credit_option" value="6" id="credit6">
+                            <label class="form-check-label" for="credit6">Cicilan 6 Bulan</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="credit_option" value="12" id="credit12">
+                            <label class="form-check-label" for="credit12">Cicilan 12 Bulan</label>
+                        </div>
+                        <div id="creditDetails" class="mt-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Harga Produk:</span>
+                                    <span id="productPrice">Rp <?php echo number_format($product['harga'], 0, ',', '.'); ?></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Biaya Admin (2%):</span>
+                                    <span id="adminFee">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Cicilan per Bulan:</span>
+                                    <span id="monthlyPayment">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Total Pembayaran:</span>
+                                    <span id="totalPayment">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="size-guide">
                     <h4>Pilih Ukuran</h4>
                     <div class="size-options">
@@ -191,21 +324,13 @@ if (!$product) {
                 </div>
 
                 <div class="action-buttons">
-                    <form method="POST" action="cart.php" style="display:inline;">
-                        <input type="hidden" name="id_produk" value="<?php echo $product['id_produk']; ?>">
-                        <input type="hidden" name="qty" value="1">
-                        <button type="submit" class="btn-cart">
-                            <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
-                        </button>
-                    </form>
-                    <form method="POST" action="checkout.php" style="display:inline;">
-                        <input type="hidden" name="id_produk" value="<?php echo $product['id_produk']; ?>">
-                        <input type="hidden" name="qty" value="1">
-                        <button type="submit" class="btn-checkout">Checkout</button>
-                    </form>
-                    <a href="https://wa.me/+6282310598605?text=Halo,%20saya%20tertarik%20dengan%20produk:%20<?php echo urlencode($product['nama_produk']); ?>"
+                    <button onclick="addToCart()" class="btn-cart">
+                        <i class="fas fa-shopping-cart"></i> Tambah ke Keranjang
+                    </button>
+                    <button onclick="buyNow()" class="btn-checkout">Checkout</button>
+                    <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $seller_data['nomor_telepon']); ?>?text=Halo%20<?php echo urlencode($seller_data['nama']); ?>,%20saya%20tertarik%20dengan%20produk:%20<?php echo urlencode($product['nama_produk']); ?>"
                         class="btn-whatsapp" target="_blank">
-                        <i class="fab fa-whatsapp"></i> Chat WhatsApp
+                        <i class="fab fa-whatsapp"></i> Chat Penjual
                     </a>
                 </div>
 
@@ -242,6 +367,45 @@ if (!$product) {
                         Stok Habis
                     </div>
                 <?php endif; ?>
+
+                <!-- Reviews Section -->
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <h3>Ulasan Produk</h3>
+                        
+                        <!-- Reviews List -->
+                        <?php if (empty($reviews)): ?>
+                            <div class="alert alert-info">
+                                Belum ada ulasan untuk produk ini.
+                            </div>
+                        <?php else: ?>
+                            <?php foreach ($reviews as $review): ?>
+                                <div class="review-card">
+                                    <div class="review-header">
+                                        <div>
+                                            <strong><?php echo htmlspecialchars($review['reviewer_name']); ?></strong>
+                                            <div class="star-rating">
+                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                    <?php if ($i <= $review['rating']): ?>
+                                                        <i class="fas fa-star"></i>
+                                                    <?php else: ?>
+                                                        <i class="far fa-star"></i>
+                                                    <?php endif; ?>
+                                                <?php endfor; ?>
+                                            </div>
+                                        </div>
+                                        <div class="review-date">
+                                            <?php echo date('d M Y', strtotime($review['tanggal_review'])); ?>
+                                        </div>
+                                    </div>
+                                    <div class="review-content">
+                                        <?php echo nl2br(htmlspecialchars($review['komentar'])); ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -249,6 +413,36 @@ if (!$product) {
     <?php include 'hf/footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const PRODUCT_PRICE = <?php echo $product['harga']; ?>;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle credit option changes
+            document.querySelectorAll('input[name="credit_option"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const months = parseInt(this.value);
+                    const result = calculateInstallment(PRODUCT_PRICE, months);
+                    
+                    document.getElementById('adminFee').textContent = `Rp${result.adminFee.toLocaleString('id-ID')}`;
+                    document.getElementById('monthlyPayment').textContent = `Rp${result.monthlyPayment.toLocaleString('id-ID')}`;
+                    document.getElementById('totalPayment').textContent = `Rp${result.totalPrice.toLocaleString('id-ID')}`;
+                    
+                    document.getElementById('creditDetails').style.display = 'block';
+                });
+            });
+        });
+
+        function calculateInstallment(price, months) {
+            const adminFee = Math.round(price * 0.02); // 2% admin fee
+            const totalPrice = price + adminFee;
+            const monthlyPayment = Math.round(totalPrice / months);
+            
+            return {
+                adminFee: adminFee,
+                monthlyPayment: monthlyPayment,
+                totalPrice: totalPrice
+            };
+        }
+
         function selectSize(element) {
             // Remove selected class from all size options
             document.querySelectorAll('.size-option').forEach(opt => {
@@ -256,6 +450,99 @@ if (!$product) {
             });
             // Add selected class to clicked size option
             element.classList.add('selected');
+            // Update hidden input
+            document.getElementById('selected_size_input').value = element.textContent;
+        }
+
+        function validateSize() {
+            const selectedSize = document.getElementById('selected_size_input').value;
+            if (!selectedSize) {
+                alert('Silakan pilih ukuran sepatu terlebih dahulu');
+                return false;
+            }
+            return true;
+        }
+
+        function addToCart() {
+            const selectedSize = document.querySelector('.size-option.selected');
+            if (!selectedSize) {
+                alert('Silakan pilih ukuran sepatu terlebih dahulu');
+                return;
+            }
+
+            const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
+            let paymentMethod = 'cash';
+            let installmentDetails = null;
+
+            if (selectedCredit) {
+                const months = parseInt(selectedCredit.value);
+                const result = calculateInstallment(PRODUCT_PRICE, months);
+                paymentMethod = 'credit';
+                installmentDetails = {
+                    months: months,
+                    monthlyPayment: result.monthlyPayment,
+                    adminFee: result.adminFee,
+                    totalPrice: result.totalPrice
+                };
+            }
+
+            const cartItem = {
+                id_produk: <?php echo $product['id_produk']; ?>,
+                nama_produk: "<?php echo htmlspecialchars($product['nama_produk']); ?>",
+                harga: PRODUCT_PRICE,
+                gambar: "<?php echo $product['gambar']; ?>",
+                ukuran: selectedSize.textContent,
+                qty: 1,
+                store: "<?php echo htmlspecialchars($seller_data['nama']); ?>",
+                payment_method: paymentMethod,
+                installment: installmentDetails
+            };
+
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push(cartItem);
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            alert('Produk berhasil ditambahkan ke keranjang!');
+            window.location.href = 'cart.php';
+        }
+
+        function buyNow() {
+            const selectedSize = document.querySelector('.size-option.selected');
+            if (!selectedSize) {
+                alert('Silakan pilih ukuran sepatu terlebih dahulu');
+                return;
+            }
+
+            const selectedCredit = document.querySelector('input[name="credit_option"]:checked');
+            let paymentMethod = 'cash';
+            let installmentDetails = null;
+
+            if (selectedCredit) {
+                const months = parseInt(selectedCredit.value);
+                const result = calculateInstallment(PRODUCT_PRICE, months);
+                paymentMethod = 'credit';
+                installmentDetails = {
+                    months: months,
+                    monthlyPayment: result.monthlyPayment,
+                    adminFee: result.adminFee,
+                    totalPrice: result.totalPrice
+                };
+            }
+
+            const checkoutItem = {
+                id_produk: <?php echo $product['id_produk']; ?>,
+                nama_produk: "<?php echo htmlspecialchars($product['nama_produk']); ?>",
+                harga: PRODUCT_PRICE,
+                gambar: "<?php echo $product['gambar']; ?>",
+                ukuran: selectedSize.textContent,
+                qty: 1,
+                store: "<?php echo htmlspecialchars($seller_data['nama']); ?>",
+                payment_method: paymentMethod,
+                installment: installmentDetails
+            };
+
+            localStorage.setItem('checkoutItems', JSON.stringify([checkoutItem]));
+            window.location.href = 'checkout.php';
         }
     </script>
 </body>

@@ -1,10 +1,104 @@
+<?php
+session_start();
+include 'koneksi.php';
+
+// Cek jika user belum login
+if (!isset($_SESSION['id_user'])) {
+    $_SESSION['redirect_url'] = 'orders.php';
+    header("Location: login2.php?error=login_required&message=Silakan+login+terlebih+dahulu");
+    exit();
+}
+
+$user_id = $_SESSION['id_user'];
+
+// Fungsi untuk mendapatkan teks status
+function getStatusText($status)
+{
+    $statusMap = array(
+        'menunggu-pembayaran' => 'Menunggu Pembayaran',
+        'menunggu-dikemas' => 'Menunggu Dikemas',
+        'diproses' => 'Diproses',
+        'dikirim' => 'Dikirim',
+        'selesai' => 'Selesai',
+        'dibatalkan' => 'Dibatalkan'
+    );
+    return isset($statusMap[$status]) ? $statusMap[$status] : $status;
+}
+
+// Cek koneksi database
+if ($conn->connect_error) {
+    die("Koneksi database gagal: " . $conn->connect_error);
+}
+
+// Get all orders for the user with their details
+$query = "SELECT o.*, 
+          GROUP_CONCAT(p.nama_produk SEPARATOR ', ') as products,
+          GROUP_CONCAT(p.gambar SEPARATOR ', ') as product_images,
+          GROUP_CONCAT(od.jumlah SEPARATOR ', ') as quantities,
+          GROUP_CONCAT(od.subtotal SEPARATOR ', ') as subtotals,
+          py.status_pembayaran, py.metode as metode_pembayaran
+          FROM orders o 
+          JOIN order_details od ON o.id_order = od.id_order 
+          JOIN products p ON od.id_produk = p.id_produk 
+          LEFT JOIN payment py ON o.id_order = py.id_order
+          WHERE o.id_user = ? 
+          GROUP BY o.id_order 
+          ORDER BY o.tanggal_pemesanan DESC";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$orders = [];
+while ($row = $result->fetch_assoc()) {
+    $order_id = $row['id_order'];
+    if (!isset($orders[$order_id])) {
+        $orders[$order_id] = array(
+            'id_order' => $order_id,
+            'tanggal_pemesanan' => $row['tanggal_pemesanan'],
+            'status_pesanan' => $row['status_pesanan'],
+            'total_harga' => $row['total_harga'],
+            'metode_pembayaran' => $row['metode_pembayaran'],
+            'status_pembayaran' => $row['status_pembayaran'],
+            'products' => explode(', ', $row['products']),
+            'product_images' => explode(', ', $row['product_images']),
+            'quantities' => explode(', ', $row['quantities']),
+            'subtotals' => explode(', ', $row['subtotals'])
+        );
+    }
+}
+
+// Handle payment submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id']) && isset($_POST['payment_method'])) {
+    $order_id = $_POST['order_id'];
+    $payment_method = $_POST['payment_method'];
+
+    // Update payment information
+    $payment_query = "INSERT INTO payment (id_order, metode, status_pembayaran) 
+                     VALUES (?, ?, 'pending')
+                     ON DUPLICATE KEY UPDATE 
+                     metode = VALUES(metode),
+                     status_pembayaran = VALUES(status_pembayaran)";
+    $payment_stmt = $conn->prepare($payment_query);
+    $payment_stmt->bind_param("is", $order_id, $payment_method);
+
+    if ($payment_stmt->execute()) {
+        $_SESSION['success_message'] = "Metode pembayaran berhasil diperbarui";
+    } else {
+        $_SESSION['error_message'] = "Gagal memperbarui metode pembayaran";
+    }
+
+    header("Location: orders.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riwayat Pesanan - K.O</title>
+    <title>Pesanan Saya - K.O</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
@@ -82,7 +176,7 @@
             font-weight: 500;
         }
 
-        .status-dikemas {
+        .status-diproses {
             background-color: #e3f2fd;
             color: #1976d2;
         }
@@ -421,17 +515,34 @@
             Kembali
         </button>
 
-        <h1 class="page-title">Riwayat Pesanan</h1>
+        <h1 class="page-title">Pesanan Saya</h1>
+
+        <?php if (isset($_SESSION['success_message'])): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?php
+                echo $_SESSION['success_message'];
+                unset($_SESSION['success_message']);
+                ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error_message'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php
+                echo $_SESSION['error_message'];
+                unset($_SESSION['error_message']);
+                ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
 
         <ul class="nav nav-tabs">
             <li class="nav-item">
                 <a class="nav-link active" href="#" onclick="filterOrders('semua')">Semua</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" onclick="filterOrders('belum-bayar')">Belum Bayar</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="filterOrders('dikemas')">Dikemas</a>
+                <a class="nav-link" href="#" onclick="filterOrders('diproses')">Diproses</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#" onclick="filterOrders('dikirim')">Dikirim</a>
@@ -445,7 +556,74 @@
         </ul>
 
         <div id="ordersList">
-            <!-- Orders will be loaded here -->
+            <?php if (empty($orders)): ?>
+                <div class="text-center py-5">
+                    <p class="mb-0">Belum ada pesanan</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($orders as $order): ?>
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">Order #<?php echo $order['id_order']; ?></h5>
+                                <small class="text-muted"><?php echo date('d/m/Y H:i', strtotime($order['tanggal_pemesanan'])); ?></small>
+                            </div>
+                            <div>
+                                <span class="badge bg-<?php
+                                                        echo match ($order['status_pesanan']) {
+                                                            'diproses' => 'warning',
+                                                            'dikirim' => 'info',
+                                                            'selesai' => 'success',
+                                                            'dibatalkan' => 'danger',
+                                                            'refund_requested' => 'warning',
+                                                            'refunded' => 'info',
+                                                            default => 'secondary'
+                                                        };
+                                                        ?>">
+                                    <?php echo ucfirst($order['status_pesanan']); ?>
+                                </span>
+                                <a href="detail_pesanan.php?id_order=<?php echo $order['id_order']; ?>" class="btn btn-sm btn-primary ms-2">
+                                    <i class="fas fa-eye"></i> Detail
+                                </a>
+                                <?php if (in_array($order['status_pesanan'], ['selesai', 'dikirim']) && !in_array($order['status_pesanan'], ['refund_requested', 'refunded'])): ?>
+                                    <a href="request_refund.php?order_id=<?php echo $order['id_order']; ?>" class="btn btn-sm btn-warning ms-2">
+                                        <i class="fas fa-undo"></i> Request Refund
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="order-items">
+                                <?php for ($i = 0; $i < count($order['products']); $i++): ?>
+                                    <div class="order-item">
+                                        <img src="<?php echo htmlspecialchars($order['product_images'][$i]); ?>"
+                                            class="item-image"
+                                            alt="<?php echo htmlspecialchars($order['products'][$i]); ?>"
+                                            onerror="this.src='image/default.png';">
+                                        <div class="item-details">
+                                            <div class="item-name"><?php echo htmlspecialchars($order['products'][$i]); ?></div>
+                                            <div class="item-price">
+                                                Rp<?php echo number_format($order['subtotals'][$i], 0, ',', '.'); ?> × <?php echo $order['quantities'][$i]; ?>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <strong>Rp<?php echo number_format($order['subtotals'][$i], 0, ',', '.'); ?></strong>
+                                        </div>
+                                    </div>
+                                <?php endfor; ?>
+                            </div>
+                            <div class="order-footer">
+                                <div class="total-section">
+                                    <div class="total-label">Total Belanja</div>
+                                    <div class="total-amount">
+                                        Rp<?php echo number_format($order['total_harga'], 0, ',', '.'); ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -653,8 +831,7 @@
 
                 <div class="order-info-section">
                     <h4 class="mb-3">Detail Produk</h4>
-                    ${order.items.map(item => `
-                        <div class="order-item">
+                    ${order.items.map(item => `                        <div class="order-item">
                             <img src="${getItemImage(item)}" class="item-image" alt="${item.name}">
                             <div class="item-details">
                                 <div class="item-name">${item.name}</div>
@@ -833,9 +1010,34 @@
             loadOrders('semua');
         }
 
-        function openCancelConfirmation(index) {
-            orderToBeCancelled = index;
-            document.getElementById('confirmationModal').style.display = 'block';
+        function openCancelConfirmation(orderId) {
+            if (confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) {
+                cancelOrder(orderId);
+            }
+        }
+
+        function cancelOrder(orderId) {
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+
+            fetch('cancel_order.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Pesanan berhasil dibatalkan');
+                        // Reload halaman untuk memperbarui daftar pesanan
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Terjadi kesalahan saat membatalkan pesanan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat membatalkan pesanan');
+                });
         }
 
         function closeConfirmationModal() {

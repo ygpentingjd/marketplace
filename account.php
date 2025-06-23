@@ -154,7 +154,11 @@ session_start();
                         <i class="fas fa-history"></i>
                         <span>Riwayat Pembelian</span>
                     </a>
-                    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['penjual', 'admin'])): ?>
+                    <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['penjual'])): ?>
+                        <a href="my_products.php" class="menu-item">
+                            <i class="fas fa-box"></i>
+                            <span>Produk Saya</span>
+                        </a>
                         <a href="upload.php" class="menu-item">
                             <i class="fas fa-upload"></i>
                             <span>Upload Barang</span>

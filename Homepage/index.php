@@ -5,7 +5,7 @@ include 'koneksi.php';
 $trending_query = "SELECT * FROM products 
                   WHERE verification_status = 'terverifikasi' 
                   ORDER BY id_produk DESC 
-                  LIMIT 3";
+                  LIMIT 9";
 $trending_result = $conn->query($trending_query);
 $trending_products = [];
 if ($trending_result) {
@@ -17,7 +17,8 @@ if ($trending_result) {
 // Fetch all verified products for explore section
 $explore_query = "SELECT * FROM products 
                  WHERE verification_status = 'terverifikasi' 
-                 ORDER BY id_produk DESC";
+                 ORDER BY id_produk DESC
+                 LIMIT 4";
 $explore_result = $conn->query($explore_query);
 $explore_products = [];
 if ($explore_result) {
@@ -28,16 +29,58 @@ if ($explore_result) {
 ?>
 
 <link href="Homepage/styles.css" rel="stylesheet">
+<style>
+    .product-image {
+        width: 300px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .carousel-product {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 0;
+        width: 100%;
+    }
+    .carousel-item {
+        padding: 20px 0;
+    }
+    .product-item {
+        flex: 0 0 auto;
+        width: 300px;
+    }
+    .carousel-inner {
+        width: 100%;
+        overflow: hidden;
+    }
+    .carousel {
+        width: 100%;
+        margin: 0 auto;
+    }
+</style>
+
 <!-- Paling Sering Dicari -->
 <div class="container">
     <h2 class="pb-2 border-bottom">Paling Sering Dicari</h2>
     <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
-            <?php foreach ($trending_products as $index => $product): ?>
+            <?php 
+            // Group products into sets of 3
+            $product_sets = array_chunk($trending_products, 3);
+            foreach ($product_sets as $index => $set): 
+            ?>
                 <div class="carousel-item <?php echo $index === 0 ? 'active' : ''; ?>">
-                    <a href="detail.php?id=<?php echo $product['id_produk']; ?>">
-                        <img src="<?php echo $product['gambar']; ?>" class="d-block w-100" alt="<?php echo htmlspecialchars($product['nama_produk']); ?>">
-                    </a>
+                    <div class="carousel-product">
+                        <?php foreach ($set as $product): ?>
+                            <div class="product-item">
+                                <a href="detail.php?id=<?php echo $product['id_produk']; ?>">
+                                    <img src="<?php echo $product['gambar']; ?>" class="product-image" alt="<?php echo htmlspecialchars($product['nama_produk']); ?>">
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -61,7 +104,7 @@ if ($explore_result) {
                 <div class="col">
                     <div class="product-card">
                         <a href="detail.php?id=<?php echo $product['id_produk']; ?>">
-                            <img src="<?php echo $product['gambar']; ?>" alt="<?php echo htmlspecialchars($product['nama_produk']); ?>">
+                            <img src="<?php echo $product['gambar']; ?>" class="product-image" alt="<?php echo htmlspecialchars($product['nama_produk']); ?>">
                         </a>
                         <div class="product-title"><?php echo htmlspecialchars($product['nama_produk']); ?></div>
                         <div class="price">Rp <?php echo number_format($product['harga'], 0, ',', '.'); ?></div>

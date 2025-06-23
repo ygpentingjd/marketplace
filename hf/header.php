@@ -28,7 +28,14 @@
     <div class="top-header d-flex justify-content-between px-4 align-items-center">
         <div href="#" class="logo"><img src="image/logo.png"></div>
         <div class="search-container w-100 d-flex justify-content-center">
-            <input type="text" class="form-control search-bar" placeholder="Cari sesuatu...">
+            <div class="col-md-6">
+                <form action="search.php" method="GET" class="d-flex">
+                    <input class="form-control me-2" type="search" name="search" placeholder="Cari produk..." aria-label="Search">
+                    <button class="btn btn-outline-dark" type="submit" style="padding: 0; width: 40px; height: 38px; display: flex; align-items: center; justify-content: center; border: none;">
+                        <img src="image/search.png" alt="Search" style="width: 24px; height: 24px;">
+                    </button>
+                </form>
+            </div>
         </div>
         <div class="d-flex align-items-center icon-links">
             <a href="cart.php" class="me-3 position-relative">
